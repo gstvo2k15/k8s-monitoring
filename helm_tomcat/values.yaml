@@ -1,0 +1,21 @@
+
+replicaCount: 3
+image:
+  repository: tomcat
+  tag: 8-jdk11
+  pullPolicy: Always
+
+service:
+  type: NodePort  # Default NodePort, can be changed to LoadBalancer or ClusterIP
+  port: 8080
+  nodePort: 32010  # Change if needed
+  loadBalancerIP: ""  # Set this if you are using LoadBalancer and need a static IP
+
+ingress:
+  enabled: true
+  hostname: tomcat.example.com  # Set your hostname for Ingress
+  path: /
+  annotations: {}
+  tls: []
+
+# Additional configurations if needed

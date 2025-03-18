@@ -1,0 +1,4 @@
+apiVersion: v2
+name: tomcat-chart
+version: 0.1.0
+description: Helm chart para Tomcat con despliegue en Kubernetes

@@ -1,4 +1,4 @@
-
+`helm install tomcat ./helm_tomcat -n tomcat --create-namespace`
 
 ### Create adhoc tomcat-exporter
 ```

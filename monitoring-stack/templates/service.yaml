@@ -1,15 +1,35 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ include "monitoring-stack.fullname" . }}
-  labels:
-    {{- include "monitoring-stack.labels" . | nindent 4 }}
+  name: {{ .Release.Name }}-{{ .Chart.Name }}
+  namespace: {{ .Values.namespace }}
 spec:
-  type: {{ .Values.service.type }}
+  type: NodePort
   ports:
-    - port: {{ .Values.service.port }}
-      targetPort: http
+    - port: {{ .Values.grafana.service.port }}
+      targetPort: 3000
+      nodePort: {{ .Values.grafana.service.nodePort }}
       protocol: TCP
-      name: http
+      name: grafana
+    - port: {{ .Values.prometheusOperator.service.port }}
+      targetPort: 9090
+      nodePort: {{ .Values.prometheusOperator.service.nodePort }}
+      protocol: TCP
+      name: prometheus-operator
+    - port: {{ .Values.kubeStateMetrics.service.port }}
+      targetPort: 8080
+      nodePort: {{ .Values.kubeStateMetrics.service.nodePort }}
+      protocol: TCP
+      name: kube-state-metrics
+    - port: {{ .Values.alertmanager.service.port }}
+      targetPort: 9093
+      nodePort: {{ .Values.alertmanager.service.nodePort }}
+      protocol: TCP
+      name: alertmanager
+    - port: {{ .Values.nodeExporter.service.port }}
+      targetPort: 9100
+      nodePort: {{ .Values.nodeExporter.service.nodePort }}
+      protocol: TCP
+      name: node-exporter
   selector:
-    {{- include "monitoring-stack.selectorLabels" . | nindent 4 }}
+    app: {{ .Release.Name }}-{{ .Chart.Name }}
