@@ -19,9 +19,9 @@ for DEPLOYMENT in "${DEPLOYMENTS[@]}"; do
 
     # Use yq to replace static values with Helm template variables
     yq -i '
-        .metadata.name = "{{ .Release.Name }}-'$DEPLOYMENT'" |
+        .metadata.name = "{{ .Release.Name }}-'"$DEPLOYMENT"'" |
         .metadata.namespace = "{{ .Values.namespace }}" |
-        .spec.replicas = "{{ .Values.'$DEPLOYMENT'.replicas }}"
+        .spec.replicas = "{{ .Values.'"$DEPLOYMENT"'.replicas }}"
     ' "$YAML_FILE"
 
     # Append values to values.yaml
