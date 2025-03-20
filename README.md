@@ -109,3 +109,79 @@ elasticsearch-68d7885f59-zpv2n elasticsearch to retrieve container logs for cont
 - elasticsearch-68d7885f59-zpv2n › elasticsearch
 ```
 
+### Observability deployment with Helm
+```
+helm upgrade --install monitoring prometheus-community/kube-prometheus-stack -n monitoring -f values-monitor
+
+
+kubectl --namespace monitoring get all -o wide
+NAME                                                         READY   STATUS    RESTARTS   AGE   IP              NODE         NOMINATED NODE   READINESS GATES
+pod/alertmanager-monitoring-kube-prometheus-alertmanager-0   2/2     Running   0          54m   172.18.85.202   k8s-node01   <none>           <none>
+pod/monitoring-grafana-599d5666f8-9w8xp                      3/3     Running   0          55m   172.18.85.198   k8s-node01   <none>           <none>
+pod/monitoring-kube-prometheus-operator-64c9dbdc68-8k7js     1/1     Running   0          55m   172.18.85.199   k8s-node01   <none>           <none>
+pod/monitoring-kube-state-metrics-7fcd8df45c-2brtd           1/1     Running   0          55m   172.18.85.197   k8s-node01   <none>           <none>
+pod/monitoring-prometheus-node-exporter-2kbbf                1/1     Running   0          55m   192.168.1.150   k8s-master   <none>           <none>
+pod/monitoring-prometheus-node-exporter-g6km6                0/1     Pending   0          55m   <none>          k8s-node02   <none>           <none>
+pod/monitoring-prometheus-node-exporter-kkpx8                1/1     Running   0          55m   192.168.1.151   k8s-node01   <none>           <none>
+pod/monitoring-prometheus-node-exporter-kt6vn                0/1     Pending   0          55m   <none>          k8s-node03   <none>           <none>
+pod/prometheus-monitoring-kube-prometheus-prometheus-0       2/2     Running   0          54m   172.18.85.201   k8s-node01   <none>           <none>
+
+NAME                                              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                      AGE   SELECTOR
+service/alertmanager-operated                     ClusterIP   None             <none>        9093/TCP,9094/TCP,9094/UDP   54m   app.kubernetes.io/name=alertmanager
+service/monitoring-grafana                        ClusterIP   10.102.126.249   <none>        80/TCP                       55m   app.kubernetes.io/instance=monitoring,app.kubernetes.io/name=grafana
+service/monitoring-kube-prometheus-alertmanager   ClusterIP   10.105.221.32    <none>        9093/TCP,8080/TCP            55m   alertmanager=monitoring-kube-prometheus-alertmanager,app.kubernetes.io/name=alertmanager
+service/monitoring-kube-prometheus-operator       ClusterIP   10.109.94.41     <none>        443/TCP                      55m   app=kube-prometheus-stack-operator,release=monitoring
+service/monitoring-kube-prometheus-prometheus     ClusterIP   10.107.0.36      <none>        9090/TCP,8080/TCP            55m   app.kubernetes.io/name=prometheus,operator.prometheus.io/name=monitoring-kube-prometheus-prometheus
+service/monitoring-kube-state-metrics             ClusterIP   10.111.108.165   <none>        8080/TCP                     55m   app.kubernetes.io/instance=monitoring,app.kubernetes.io/name=kube-state-metrics
+service/monitoring-prometheus-node-exporter       ClusterIP   10.104.65.207    <none>        9100/TCP                     55m   app.kubernetes.io/instance=monitoring,app.kubernetes.io/name=prometheus-node-exporter
+service/prometheus-operated                       ClusterIP   None             <none>        9090/TCP                     54m   app.kubernetes.io/name=prometheus
+
+NAME                                                 DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR            AGE   CONTAINERS      IMAGES                                    SELECTOR
+daemonset.apps/monitoring-prometheus-node-exporter   4         4         2       4            2           kubernetes.io/os=linux   55m   node-exporter   quay.io/prometheus/node-exporter:v1.9.0   app.kubernetes.io/instance=monitoring,app.kubernetes.io/name=prometheus-node-exporter
+
+NAME                                                  READY   UP-TO-DATE   AVAILABLE   AGE   CONTAINERS                                            IMAGES                                                                                                     SELECTOR
+deployment.apps/monitoring-grafana                    1/1     1            1           55m   grafana-sc-dashboard,grafana-sc-datasources,grafana   quay.io/kiwigrid/k8s-sidecar:1.30.0,quay.io/kiwigrid/k8s-sidecar:1.30.0,docker.io/grafana/grafana:11.5.2   app.kubernetes.io/instance=monitoring,app.kubernetes.io/name=grafana
+deployment.apps/monitoring-kube-prometheus-operator   1/1     1            1           55m   kube-prometheus-stack                                 quay.io/prometheus-operator/prometheus-operator:v0.81.0                                                    app=kube-prometheus-stack-operator,release=monitoring
+deployment.apps/monitoring-kube-state-metrics         1/1     1            1           55m   kube-state-metrics                                    registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.15.0                                              app.kubernetes.io/instance=monitoring,app.kubernetes.io/name=kube-state-metrics
+
+NAME                                                             DESIRED   CURRENT   READY   AGE   CONTAINERS                                            IMAGES                                                                                                     SELECTOR
+replicaset.apps/monitoring-grafana-599d5666f8                    1         1         1       55m   grafana-sc-dashboard,grafana-sc-datasources,grafana   quay.io/kiwigrid/k8s-sidecar:1.30.0,quay.io/kiwigrid/k8s-sidecar:1.30.0,docker.io/grafana/grafana:11.5.2   app.kubernetes.io/instance=monitoring,app.kubernetes.io/name=grafana,pod-template-hash=599d5666f8
+replicaset.apps/monitoring-kube-prometheus-operator-64c9dbdc68   1         1         1       55m   kube-prometheus-stack                                 quay.io/prometheus-operator/prometheus-operator:v0.81.0                                                    app=kube-prometheus-stack-operator,pod-template-hash=64c9dbdc68,release=monitoring
+replicaset.apps/monitoring-kube-state-metrics-7fcd8df45c         1         1         1       55m   kube-state-metrics                                    registry.k8s.io/kube-state-metrics/kube-state-metrics:v2.15.0                                              app.kubernetes.io/instance=monitoring,app.kubernetes.io/name=kube-state-metrics,pod-template-hash=7fcd8df45c
+
+NAME                                                                    READY   AGE   CONTAINERS                     IMAGES
+statefulset.apps/alertmanager-monitoring-kube-prometheus-alertmanager   1/1     54m   alertmanager,config-reloader   quay.io/prometheus/alertmanager:v0.28.1,quay.io/prometheus-operator/prometheus-config-reloader:v0.81.0
+statefulset.apps/prometheus-monitoring-kube-prometheus-prometheus       1/1     54m   prometheus,config-reloader     quay.io/prometheus/prometheus:v3.2.1,quay.io/prometheus-operator/prometheus-config-reloader:v0.81.0
+
+
+
+kubectl patch svc monitoring-grafana -n monitoring -p '{"spec": {"type": "NodePort", "ports": [{"port": 80, "nodePort": 32222, "protocol": "TCP"}]}}'
+
+kubectl patch svc monitoring-kube-prometheus-prometheus -n monitoring -p '{"spec": {"type": "NodePort", "ports": [{"port": 9090, "nodePort": 32323, "protocol": "TCP"}]}}'
+
+
+
+
+
+kubectl get svc -n monitoring
+NAME                                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                         AGE
+alertmanager-operated                     ClusterIP   None             <none>        9093/TCP,9094/TCP,9094/UDP      55m
+monitoring-grafana                        NodePort    10.102.126.249   <none>        80:32222/TCP                    56m
+monitoring-kube-prometheus-alertmanager   ClusterIP   10.105.221.32    <none>        9093/TCP,8080/TCP               56m
+monitoring-kube-prometheus-operator       ClusterIP   10.109.94.41     <none>        443/TCP                         56m
+monitoring-kube-prometheus-prometheus     NodePort    10.107.0.36      <none>        9090:32323/TCP,8080:30087/TCP   56m
+monitoring-kube-state-metrics             ClusterIP   10.111.108.165   <none>        8080/TCP                        56m
+monitoring-prometheus-node-exporter       ClusterIP   10.104.65.207    <none>        9100/TCP                        56m
+prometheus-operated                       ClusterIP   None             <none>        9090/TCP                        55m
+
+
+
+http://192.168.1.151:32222/login
+
+
+http://192.168.1.151:32323/config
+
+
+kubectl get secret -n monitoring monitoring-grafana -o jsonpath="{.data.admin-password}" | base64 --decode
+prom-operator
+```
