@@ -19,3 +19,12 @@ ingress:
   tls: []
 
 # Additional configurations if needed
+kibana:
+  enabled: true
+  replicas: 1
+  image: docker.elastic.co/kibana/kibana:8.10.2
+  nodePort: 30094
+  elasticsearchHost: "https://elasticsearch:9200"
+  extraEnvs:
+    - name: ELASTICSEARCH_SSL_VERIFICATIONMODE
+      value: "none"
